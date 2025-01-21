@@ -99,7 +99,7 @@ class Orbit:
         self.r_inertial = self.rotation_matrix @ self.r_o
         self.v_inertial = self.rotation_matrix @ self.v_o
 
-    def _get_hn_t(self, t):
+    def get_hn_t(self, t):
 
         self.find_inertial_r_and_v_t(t)
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     nano_orbit = Orbit(5000, 30, 30, 30)
     mother_orbit = Orbit(5000, 30, 30, 30)
 
-    ############### Task 1 ###############
+    ############### Task 1: Orbit Simulation ###############
     nano_orbit.find_inertial_r_and_v_t(450)
     print(nano_orbit.r_inertial)
     print(nano_orbit.v_inertial)
@@ -125,12 +125,13 @@ if __name__ == "__main__":
     print(mother_orbit.r_inertial)
     print(mother_orbit.v_inertial)
 
-    ############### Task 2 ###############
-    nano_orbit._get_hn_t(500)
+    ############### Task 2: Orbit Frame Oreintation ###############
+    nano_orbit.get_hn_t(500)
     print(nano_orbit.hn_t)
 
-    mother_orbit._get_hn_t(500)
+    mother_orbit.get_hn_t(500)
     print(mother_orbit.hn_t)
 
-
+    ############### Task 3: Sun-Pointing Reference Frane Oreintation ###############
+    print(rn_dcm)
 
