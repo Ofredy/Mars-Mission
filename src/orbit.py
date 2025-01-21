@@ -5,14 +5,14 @@ from configs import *
 
 class Orbit:
 
-    def __init__(self, radius, right_ascension, inclination, initial_true_anomaly):
+    def __init__(self, radius, right_ascension, inclination, nu_0):
 
         self.radius = radius
         self.right_ascension = np.deg2rad(right_ascension)
         self.inclination = np.deg2rad(inclination)
-        self.initial_true_anomaly = np.deg2rad(initial_true_anomaly)
+        self.nu_0 = np.deg2rad(nu_0)
 
-    def _get_curr_true_anomaly_t(self, t):
+    def _get_nu_t(self, t):
 
         """
         Calculate the true anomaly after a certain time for a circular orbit.
@@ -33,7 +33,7 @@ class Orbit:
         n = 2 * np.pi / T
 
         # Compute true anomaly
-        self.curr_true_anomaly = (self.initial_true_anomaly + n * t) % (2 * np.pi)
+        self.nu_t = (self.nu_0 + n * t) % (2 * np.pi)
 
     def _get_rotation_matrix(self):
 
@@ -77,18 +77,18 @@ class Orbit:
             radius: Orbital radius (assumed circular orbit).
             orbit_euler_angles: Tuple of (right ascension, inclination, true anomaly).
         """
-        self._get_curr_true_anomaly_t(t)
+        self._get_nu_t(t)
 
         # Compute position and velocity in the perifocal frame
         self.r_o = np.array([
-            self.radius * np.cos(self.curr_true_anomaly), 
-            self.radius * np.sin(self.curr_true_anomaly),
+            self.radius * np.cos(self.nu_t), 
+            self.radius * np.sin(self.nu_t),
             0
         ])
 
         self.v_o = np.array([
-            np.sqrt(MARS_G_CONST / self.radius) * -np.sin(self.curr_true_anomaly), 
-            np.sqrt(MARS_G_CONST / self.radius) * np.cos(self.curr_true_anomaly),
+            np.sqrt(MARS_G_CONST / self.radius) * -np.sin(self.nu_t), 
+            np.sqrt(MARS_G_CONST / self.radius) * np.cos(self.nu_t),
             0
         ])
 
@@ -99,19 +99,17 @@ class Orbit:
         self.r_inertial = self.rotation_matrix @ self.r_o
         self.v_inertial = self.rotation_matrix @ self.v_o
 
-    def _get_h_t(self, t):
+    def _get_hn_t(self, t):
 
         self.find_inertial_r_and_v_t(t)
 
         i_r = self.r_inertial / np.linalg.norm(self.r_inertial)
-        i_h = np.cross(self.r_inertial, self.v_inertial) / np.linalg.norm(np.cross(self.r_inertial, self.v_inertial))
+        i_h = np.cross(self.r_inertial, self.v_inertial)
+        i_h = i_h / np.linalg.norm(i_h)
         i_theta = np.cross(i_h, i_r)
 
-        self.curr_hn = np.column_stack([i_r, i_theta, i_h])
+        self.hn_t = np.column_stack([i_r, i_theta, i_h])
 
-    def find_dcm_hn_t(self, t):
-
-        self._get_h_t(t)
 
 if __name__ == "__main__":
 
@@ -120,7 +118,19 @@ if __name__ == "__main__":
 
     ############### Task 1 ###############
     nano_orbit.find_inertial_r_and_v_t(450)
+    print(nano_orbit.r_inertial)
+    print(nano_orbit.v_inertial)
+
     mother_orbit.find_inertial_r_and_v_t(1150)
+    print(mother_orbit.r_inertial)
+    print(mother_orbit.v_inertial)
 
     ############### Task 2 ###############
-    nano_orbit._get_h_t(500)
+    nano_orbit._get_hn_t(500)
+    print(nano_orbit.hn_t)
+
+    mother_orbit._get_hn_t(500)
+    print(mother_orbit.hn_t)
+
+
+
